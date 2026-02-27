@@ -1,0 +1,70 @@
+name: 'Diagnostic: Head SHA checkout file tree'
+
+on:
+  pull_request:
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Report Git context
+        run: |
+          echo "=== GitHub Context ==="
+          echo "GITHUB_SHA:        $GITHUB_SHA"
+          echo "GITHUB_REF:        $GITHUB_REF"
+          echo "GITHUB_EVENT_NAME: $GITHUB_EVENT_NAME"
+          echo "PR Head SHA:       ${{ github.event.pull_request.head.sha }}"
+          echo "PR Base SHA:       ${{ github.event.pull_request.base.sha }}"
+          echo ""
+          echo "=== Checked-out commit ==="
+          git rev-parse HEAD
+          git log --oneline -3
+
+      - name: List .github/scripts tree
+        run: |
+          echo "=== .github/scripts/ ==="
+          find .github/scripts -type f 2>/dev/null || echo "(directory not found)"
+          echo ""
+          echo "=== .github/actions/ ==="
+          find .github/actions -type f 2>/dev/null || echo "(directory not found)"
+
+      - name: List ci/ tree
+        run: |
+          echo "=== ci/ ==="
+          find ci -type f 2>/dev/null || echo "(directory not found)"
+
+      - name: Test OLD script paths (pre-move)
+        run: |
+          echo "=== Testing OLD paths (pre-move) ==="
+          echo -n ".github/scripts/direct-regular.sh: "
+          [ -f .github/scripts/direct-regular.sh ] && echo "EXISTS" || echo "MISSING"
+          echo -n ".github/scripts/action-relative-regular.sh: "
+          [ -f .github/scripts/action-relative-regular.sh ] && echo "EXISTS" || echo "MISSING"
+          echo -n "ci/direct-regular.sh: "
+          [ -f ci/direct-regular.sh ] && echo "EXISTS" || echo "MISSING"
+          echo -n "ci/action-relative-regular.sh: "
+          [ -f ci/action-relative-regular.sh ] && echo "EXISTS" || echo "MISSING"
+
+      - name: Test NEW script paths (post-move)
+        run: |
+          echo "=== Testing NEW paths (post-move) ==="
+          echo -n ".github/scripts/moved/direct-regular.sh: "
+          [ -f .github/scripts/moved/direct-regular.sh ] && echo "EXISTS" || echo "MISSING"
+          echo -n ".github/scripts/moved/action-relative-regular.sh: "
+          [ -f .github/scripts/moved/action-relative-regular.sh ] && echo "EXISTS" || echo "MISSING"
+          echo -n "ci/moved/direct-regular.sh: "
+          [ -f ci/moved/direct-regular.sh ] && echo "EXISTS" || echo "MISSING"
+          echo -n "ci/moved/action-relative-regular.sh: "
+          [ -f ci/moved/action-relative-regular.sh ] && echo "EXISTS" || echo "MISSING"
+
+      - name: Summary
+        run: |
+          echo "=== SUMMARY ==="
+          echo "This workflow checks out the PR HEAD SHA, not the merge commit."
+          echo "If scripts were moved on main, the checkout will have OLD paths."
+          echo "But GitHub reads workflow files from the merge commit (NEW paths)."
+          echo "This mismatch is the PyTorch CI failure pattern."
