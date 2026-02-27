@@ -3,5 +3,5 @@ description: 'Runs script from .github/scripts via branch-ref action'
 runs:
   using: 'composite'
   steps:
-    - run: bash .github/scripts/action-branch-regular.sh
+    - run: bash .github/scripts/moved/action-branch-regular.sh
       shell: bash

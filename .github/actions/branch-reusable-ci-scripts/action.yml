@@ -3,5 +3,5 @@ description: 'Runs script from ci/ via branch-ref action (reusable workflow)'
 runs:
   using: 'composite'
   steps:
-    - run: bash ci/action-branch-reusable.sh
+    - run: bash ci/moved/action-branch-reusable.sh
       shell: bash
