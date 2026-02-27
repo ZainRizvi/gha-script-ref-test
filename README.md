@@ -4,48 +4,16 @@ When scripts referenced by GitHub Actions workflows are moved to a new location 
 
 **TL;DR:** With default GitHub Actions behavior, **no** — everything works because GitHub uses a synthetic merge commit. But if your CI explicitly checks out `github.event.pull_request.head.sha` (as PyTorch does), then **yes** — direct `run:` commands referencing moved scripts will break.
 
-## Official GitHub Documentation
+## How GitHub Actions Resolves Workflows for PRs
 
-The behaviors observed in these experiments are documented by GitHub:
+For `pull_request` events, GitHub creates a synthetic merge commit at `refs/pull/N/merge`. The workflow YAML that GitHub *executes* is read from this merge commit — this is a platform behavior that cannot be overridden. But `actions/checkout` populates the workspace independently, and its `ref:` parameter can be overridden to check out a different commit (like `pull_request.head.sha`).
 
-### Merge commit for `pull_request` events
+This means **the workflow YAML being executed and the code on disk can come from different commits.** When you override checkout to use the PR HEAD, the `run:` commands in the workflow (from the merge commit, with main's updated paths) try to execute against the checked-out code (from the PR HEAD, with old paths). Script not found.
 
-> **GITHUB_SHA**: Last merge commit on the `GITHUB_REF` branch.
-> **GITHUB_REF**: PR merge branch `refs/pull/PULL_REQUEST_NUMBER/merge`.
-
-Source: [Events that trigger workflows — `pull_request`](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull_request)
-
-### Workflow file version selection
-
-> Each workflow run will use the version of the workflow that is present in the associated commit SHA or Git ref of the event.
-
-Since `GITHUB_SHA` for `pull_request` is the merge commit, the workflow YAML is read from the merge commit — not the PR head.
-
-Source: [About workflows — Triggering process](https://docs.github.com/en/actions/using-workflows/about-workflows#triggering-a-workflow)
-
-### Merge conflicts prevent workflow runs
-
-> Workflows will not run on `pull_request` activity if the pull request has a merge conflict; the merge conflict must be resolved first.
-
-Source: [Events that trigger workflows — `pull_request`](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request)
-
-### Checking out PR HEAD instead of merge commit
-
-> If you want to get the commit ID for the last commit to the head branch of the pull request, use `github.event.pull_request.head.sha` instead.
-
-The `actions/checkout` action [documents this pattern](https://github.com/actions/checkout#checkout-pull-request-head-commit-instead-of-merge-commit) for checking out the PR HEAD:
-```yaml
-- uses: actions/checkout@v4
-  with:
-    ref: ${{ github.event.pull_request.head.sha }}
-```
-
-## Official GitHub Documentation
-
-GitHub documents that for `pull_request` events, each workflow run uses the version of the workflow file from the merge commit (`refs/pull/N/merge`), while the checked-out code can be overridden to the PR HEAD via `ref: github.event.pull_request.head.sha`. This is the root cause of the mismatch — workflow YAML from the merge commit references moved paths, but the checkout has pre-move code.
+GitHub documents the individual pieces but does not explicitly warn about the mismatch:
 
 - [Workflow triggering process](https://docs.github.com/en/actions/using-workflows/about-workflows#triggering-a-workflow): *"Each workflow run will use the version of the workflow that is present in the associated commit SHA or Git ref of the event."*
-- [`pull_request` event](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull_request): Documents that `GITHUB_SHA` is the merge commit and `GITHUB_REF` is `refs/pull/N/merge`.
+- [`pull_request` event](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull_request): Documents that `GITHUB_SHA` is the merge commit and `GITHUB_REF` is `refs/pull/N/merge`. Also: *"Workflows will not run on `pull_request` activity if the pull request has a merge conflict."*
 - [actions/checkout — Checkout PR HEAD](https://github.com/actions/checkout#checkout-pull-request-head-commit-instead-of-merge-commit): Documents how to override the default merge commit checkout with `ref: ${{ github.event.pull_request.head.sha }}`.
 
 ## Background
@@ -178,6 +146,34 @@ NEW paths: ALL MISSING
 ```
 
 **Relative actions are immune** because `uses: ./.github/actions/...` reads the `action.yml` from the checked-out directory (PR HEAD), not from the workflow YAML. The action.yml has old paths matching the old file tree.
+
+### Experiment 7: Proving Workflow-on-Disk vs Executing Workflow (PR #11)
+
+**PR from `pre-move` with head-sha checkout diagnostic + reusable workflow version test.**
+
+Key findings:
+
+```
+GITHUB_SHA = 232e106f...  (merge commit)
+Checked out = fe18c1b3...  (PR HEAD — different commit!)
+GITHUB_REF = refs/pull/11/merge
+```
+
+The workflow file on disk after checkout is the **PR's version** (old paths), but GitHub is executing the **merge commit's version** (new paths). These are different files. The `ref:` parameter on `actions/checkout` only controls what code is checked out to the workspace — it does NOT change which workflow YAML GitHub executes.
+
+**Reusable workflow resolution:** The existing reusable workflow `test-reusable-direct-github-scripts.yml` (called via `uses: ./.github/workflows/...`) executed `bash .github/scripts/moved/direct-reusable.sh` — main's updated path. This confirms reusable workflows are also resolved from the merge commit, not from the checkout workspace.
+
+### Workflow Resolution Hierarchy (Experimentally Verified)
+
+| Component | Resolved from | When | Evidence |
+|-----------|--------------|------|----------|
+| Root workflow YAML | Merge commit | Before any steps run | PR #10: `run:` used main's paths despite head-sha checkout |
+| Reusable workflows (`uses: ./.github/workflows/...`) | Merge commit | At planning time, before any jobs start | PR #11: existing reusable workflow ran main's paths |
+| Composite actions (`uses: ./.github/actions/...` in steps) | Checkout workspace | During step execution, after checkout | PR #10: relative actions read action.yml from checkout, used old paths, passed |
+| `run:` commands | Literal text from executing workflow YAML (merge commit) | During step execution | PR #10: ran main's `moved/` paths despite head-sha checkout |
+| `uses: ...@main` actions | Always from `main` branch | At step execution | PR #2: fetched stale action.yml from main during transition |
+
+The critical insight: **the workflow YAML and the checked-out code can come from different commits.** GitHub's runner infrastructure reads the workflow from the merge commit. `actions/checkout` populates the workspace independently. When you override `ref:` to use `pull_request.head.sha`, you create a split where the instructions (workflow YAML) reference one set of paths but the filesystem has another.
 
 ### Bonus: The Move PR Itself (PR #2)
 
