@@ -1,0 +1,39 @@
+name: 'Diagnostic: Dump Git History'
+
+on:
+  pull_request:
+
+jobs:
+  dump-history:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Show git log
+        run: |
+          echo "=== HEAD ==="
+          git rev-parse HEAD
+          echo ""
+          echo "=== git log --oneline (all) ==="
+          git log --oneline --all --graph
+          echo ""
+          echo "=== git log --oneline (current branch) ==="
+          git log --oneline
+          echo ""
+          echo "=== Parent commits of HEAD ==="
+          git cat-file -p HEAD | head -5
+          echo ""
+          echo "=== What ref was checked out? ==="
+          echo "GITHUB_REF=$GITHUB_REF"
+          echo "GITHUB_SHA=$GITHUB_SHA"
+          echo "GITHUB_HEAD_REF=$GITHUB_HEAD_REF"
+          echo "GITHUB_BASE_REF=$GITHUB_BASE_REF"
+          echo ""
+          echo "=== Files at old script locations ==="
+          ls -la .github/scripts/ 2>&1 || echo "(no .github/scripts/)"
+          ls -la ci/ 2>&1 || echo "(no ci/)"
+          echo ""
+          echo "=== Files at new script locations ==="
+          ls -la .github/scripts/moved/ 2>&1 || echo "(no .github/scripts/moved/)"
+          ls -la ci/moved/ 2>&1 || echo "(no ci/moved/)"
