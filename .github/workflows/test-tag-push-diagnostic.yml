@@ -1,0 +1,42 @@
+name: 'Diagnostic: Tag Push Workflow Resolution'
+
+on:
+  push:
+    tags:
+      - test-tag/*
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show context
+        run: |
+          echo "=== Event and Ref ==="
+          echo "GITHUB_EVENT_NAME=$GITHUB_EVENT_NAME"
+          echo "GITHUB_SHA=$GITHUB_SHA"
+          echo "GITHUB_REF=$GITHUB_REF"
+          echo ""
+          echo "=== Checked-out commit ==="
+          git rev-parse HEAD
+          git log -1 --oneline
+          echo ""
+          echo "=== This workflow file on disk ==="
+          cat .github/workflows/test-tag-push-diagnostic.yml 2>&1 || echo "FILE NOT FOUND ON DISK"
+          echo ""
+          echo "=== Script locations ==="
+          echo "Old paths:"
+          ls .github/scripts/*.sh 2>/dev/null || echo "  (none)"
+          ls ci/*.sh 2>/dev/null || echo "  (none)"
+          echo "New paths:"
+          ls .github/scripts/moved/*.sh 2>/dev/null || echo "  (none)"
+          ls ci/moved/*.sh 2>/dev/null || echo "  (none)"
+
+      - name: Run script at NEW path (should work if tagged commit is post-move)
+        run: bash .github/scripts/moved/direct-regular.sh
+        continue-on-error: true
+
+      - name: Run script at OLD path (should work if tagged commit is pre-move)
+        run: bash .github/scripts/direct-regular.sh
+        continue-on-error: true
