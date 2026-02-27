@@ -26,3 +26,5 @@ Testing GitHub Actions behavior when scripts referenced by workflows move locati
 <!-- dummy commit 2 -->
 
 <!-- dummy commit 3 -->
+
+# test from pre-move state with modified workflows v2
