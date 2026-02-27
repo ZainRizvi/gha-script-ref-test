@@ -18,3 +18,5 @@ Testing GitHub Actions behavior when scripts referenced by workflows move locati
 | 10 | Reusable | Relative action | ci/ | caller-reusable-relative-action-ci-scripts.yml |
 | 11 | Reusable | Branch-ref action | .github/scripts/ | caller-reusable-branch-action-github-scripts.yml |
 | 12 | Reusable | Branch-ref action | ci/ | caller-reusable-branch-action-ci-scripts.yml |
+
+<!-- verify all workflows pass -->
