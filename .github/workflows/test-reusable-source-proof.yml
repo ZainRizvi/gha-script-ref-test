@@ -1,0 +1,23 @@
+name: 'Proof: Reusable workflow version check'
+
+on:
+  workflow_call:
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: This step only exists in PR version
+        run: echo "REUSABLE_VERSION=PR_BRANCH_VERSION"
+
+      - name: Show reusable workflow file on disk
+        run: |
+          echo "=== Reusable workflow ON DISK ==="
+          cat .github/workflows/test-reusable-source-proof.yml
+
+      - name: Run script at OLD path
+        run: bash .github/scripts/direct-reusable.sh

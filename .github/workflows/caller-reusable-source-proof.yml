@@ -1,0 +1,8 @@
+name: 'Proof: Caller for reusable workflow version'
+
+on:
+  pull_request:
+
+jobs:
+  call-reusable:
+    uses: ./.github/workflows/test-reusable-source-proof.yml

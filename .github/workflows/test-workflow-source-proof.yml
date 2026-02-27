@@ -1,0 +1,31 @@
+name: 'Proof: Workflow on disk vs executing workflow'
+
+on:
+  pull_request:
+
+jobs:
+  prove-mismatch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Show THIS workflow file from disk (PR HEAD version)
+        run: |
+          echo "=== Workflow file ON DISK (from checkout) ==="
+          cat .github/workflows/test-workflow-source-proof.yml
+
+      - name: Show what GITHUB_SHA points to
+        run: |
+          echo "GITHUB_SHA=$GITHUB_SHA"
+          echo "GITHUB_REF=$GITHUB_REF"
+          echo ""
+          echo "Checked out commit:"
+          git rev-parse HEAD
+          echo ""
+          echo "These differ because the executing workflow is from GITHUB_SHA (merge commit)"
+          echo "but the checkout is the PR HEAD"
+
+      - name: Run a script that THIS file references at OLD path
+        run: bash .github/scripts/direct-regular.sh
