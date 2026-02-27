@@ -1,0 +1,11 @@
+name: 'PR-Added: Relative Action + CI Scripts (old path)'
+
+on:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/relative-regular-ci-scripts
