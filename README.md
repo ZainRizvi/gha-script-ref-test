@@ -4,6 +4,50 @@ When scripts referenced by GitHub Actions workflows are moved to a new location 
 
 **TL;DR:** With default GitHub Actions behavior, **no** — everything works because GitHub uses a synthetic merge commit. But if your CI explicitly checks out `github.event.pull_request.head.sha` (as PyTorch does), then **yes** — direct `run:` commands referencing moved scripts will break.
 
+## Official GitHub Documentation
+
+The behaviors observed in these experiments are documented by GitHub:
+
+### Merge commit for `pull_request` events
+
+> **GITHUB_SHA**: Last merge commit on the `GITHUB_REF` branch.
+> **GITHUB_REF**: PR merge branch `refs/pull/PULL_REQUEST_NUMBER/merge`.
+
+Source: [Events that trigger workflows — `pull_request`](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull_request)
+
+### Workflow file version selection
+
+> Each workflow run will use the version of the workflow that is present in the associated commit SHA or Git ref of the event.
+
+Since `GITHUB_SHA` for `pull_request` is the merge commit, the workflow YAML is read from the merge commit — not the PR head.
+
+Source: [About workflows — Triggering process](https://docs.github.com/en/actions/using-workflows/about-workflows#triggering-a-workflow)
+
+### Merge conflicts prevent workflow runs
+
+> Workflows will not run on `pull_request` activity if the pull request has a merge conflict; the merge conflict must be resolved first.
+
+Source: [Events that trigger workflows — `pull_request`](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request)
+
+### Checking out PR HEAD instead of merge commit
+
+> If you want to get the commit ID for the last commit to the head branch of the pull request, use `github.event.pull_request.head.sha` instead.
+
+The `actions/checkout` action [documents this pattern](https://github.com/actions/checkout#checkout-pull-request-head-commit-instead-of-merge-commit) for checking out the PR HEAD:
+```yaml
+- uses: actions/checkout@v4
+  with:
+    ref: ${{ github.event.pull_request.head.sha }}
+```
+
+## Official GitHub Documentation
+
+GitHub documents that for `pull_request` events, each workflow run uses the version of the workflow file from the merge commit (`refs/pull/N/merge`), while the checked-out code can be overridden to the PR HEAD via `ref: github.event.pull_request.head.sha`. This is the root cause of the mismatch — workflow YAML from the merge commit references moved paths, but the checkout has pre-move code.
+
+- [Workflow triggering process](https://docs.github.com/en/actions/using-workflows/about-workflows#triggering-a-workflow): *"Each workflow run will use the version of the workflow that is present in the associated commit SHA or Git ref of the event."*
+- [`pull_request` event](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull_request): Documents that `GITHUB_SHA` is the merge commit and `GITHUB_REF` is `refs/pull/N/merge`.
+- [actions/checkout — Checkout PR HEAD](https://github.com/actions/checkout#checkout-pull-request-head-commit-instead-of-merge-commit): Documents how to override the default merge commit checkout with `ref: ${{ github.event.pull_request.head.sha }}`.
+
 ## Background
 
 This repo was created to systematically test which combinations of workflow type, script invocation method, and script location trigger failures when scripts move on `main` while a PR is still open from before the move.
