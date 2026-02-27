@@ -5,3 +5,6 @@ runs:
   steps:
     - run: bash .github/scripts/action-branch-reusable.sh
       shell: bash
+    - name: PR-added step
+      run: echo "Step added by PR branch"
+      shell: bash

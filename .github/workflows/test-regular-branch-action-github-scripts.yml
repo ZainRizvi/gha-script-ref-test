@@ -10,3 +10,5 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run via branch-ref action
         uses: ZainRizvi/gha-script-ref-test/.github/actions/branch-regular-github-scripts@main
+      - name: PR-added step
+        run: echo "Step added by PR branch"

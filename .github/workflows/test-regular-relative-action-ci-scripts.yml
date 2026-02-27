@@ -10,3 +10,5 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run via relative action
         uses: ./.github/actions/relative-regular-ci-scripts
+      - name: PR-added step
+        run: echo "Step added by PR branch"

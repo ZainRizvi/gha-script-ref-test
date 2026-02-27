@@ -5,3 +5,6 @@ runs:
   steps:
     - run: bash ci/action-branch-regular.sh
       shell: bash
+    - name: PR-added step
+      run: echo "Step added by PR branch"
+      shell: bash

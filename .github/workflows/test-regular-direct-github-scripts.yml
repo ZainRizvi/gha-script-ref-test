@@ -10,3 +10,5 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run script directly
         run: bash .github/scripts/direct-regular.sh
+      - name: PR-added step
+        run: echo "Step added by PR branch"
