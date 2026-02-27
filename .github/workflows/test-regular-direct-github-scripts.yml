@@ -9,4 +9,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run script directly
-        run: bash .github/scripts/direct-regular.sh
+        run: bash .github/scripts/direct-regular.sh # PR modified this line
