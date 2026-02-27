@@ -3,5 +3,5 @@ description: 'Runs script from ci/ via branch-ref action'
 runs:
   using: 'composite'
   steps:
-    - run: bash ci/action-branch-regular.sh
+    - run: bash ci/moved/action-branch-regular.sh
       shell: bash

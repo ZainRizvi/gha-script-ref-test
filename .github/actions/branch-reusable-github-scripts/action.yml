@@ -3,5 +3,5 @@ description: 'Runs script from .github/scripts via branch-ref action (reusable w
 runs:
   using: 'composite'
   steps:
-    - run: bash .github/scripts/action-branch-reusable.sh
+    - run: bash .github/scripts/moved/action-branch-reusable.sh
       shell: bash

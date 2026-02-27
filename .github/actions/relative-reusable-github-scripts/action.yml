@@ -3,5 +3,5 @@ description: 'Runs script from .github/scripts via relative action ref (reusable
 runs:
   using: 'composite'
   steps:
-    - run: bash .github/scripts/action-relative-reusable.sh
+    - run: bash .github/scripts/moved/action-relative-reusable.sh
       shell: bash

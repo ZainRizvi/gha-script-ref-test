@@ -9,4 +9,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run script directly
-        run: bash ci/direct-reusable.sh
+        run: bash ci/moved/direct-reusable.sh
