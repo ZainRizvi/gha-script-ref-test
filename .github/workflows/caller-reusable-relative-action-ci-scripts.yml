@@ -1,0 +1,8 @@
+name: 'Test: Reusable + Relative Action + CI Scripts'
+
+on:
+  pull_request:
+
+jobs:
+  call-reusable:
+    uses: ./.github/workflows/test-reusable-relative-action-ci-scripts.yml

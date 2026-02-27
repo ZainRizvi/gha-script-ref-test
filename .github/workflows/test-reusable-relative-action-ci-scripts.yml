@@ -1,0 +1,12 @@
+name: 'Reusable: Relative Action + CI Scripts'
+
+on:
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run via relative action
+        uses: ./.github/actions/relative-reusable-ci-scripts

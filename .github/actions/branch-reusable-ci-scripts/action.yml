@@ -1,0 +1,7 @@
+name: 'Branch Action - Reusable - CI Scripts'
+description: 'Runs script from ci/ via branch-ref action (reusable workflow)'
+runs:
+  using: 'composite'
+  steps:
+    - run: bash ci/action-branch-reusable.sh
+      shell: bash

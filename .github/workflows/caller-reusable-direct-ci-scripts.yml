@@ -1,0 +1,8 @@
+name: 'Test: Reusable + Direct + CI Scripts'
+
+on:
+  pull_request:
+
+jobs:
+  call-reusable:
+    uses: ./.github/workflows/test-reusable-direct-ci-scripts.yml

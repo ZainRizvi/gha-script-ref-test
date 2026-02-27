@@ -1,0 +1,12 @@
+name: 'Test: Regular + Branch Action + GitHub Scripts'
+
+on:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run via branch-ref action
+        uses: ZainRizvi/gha-script-ref-test/.github/actions/branch-regular-github-scripts@main

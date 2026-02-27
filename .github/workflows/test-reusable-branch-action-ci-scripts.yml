@@ -1,0 +1,12 @@
+name: 'Reusable: Branch Action + CI Scripts'
+
+on:
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run via branch-ref action
+        uses: ZainRizvi/gha-script-ref-test/.github/actions/branch-reusable-ci-scripts@main

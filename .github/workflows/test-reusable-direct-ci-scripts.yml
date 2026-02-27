@@ -1,0 +1,12 @@
+name: 'Reusable: Direct + CI Scripts'
+
+on:
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run script directly
+        run: bash ci/direct-reusable.sh

@@ -1,0 +1,7 @@
+name: 'Relative Action - Reusable - GitHub Scripts'
+description: 'Runs script from .github/scripts via relative action ref (reusable workflow)'
+runs:
+  using: 'composite'
+  steps:
+    - run: bash .github/scripts/action-relative-reusable.sh
+      shell: bash

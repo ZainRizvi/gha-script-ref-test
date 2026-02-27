@@ -1,0 +1,8 @@
+name: 'Test: Reusable + Direct + GitHub Scripts'
+
+on:
+  pull_request:
+
+jobs:
+  call-reusable:
+    uses: ./.github/workflows/test-reusable-direct-github-scripts.yml

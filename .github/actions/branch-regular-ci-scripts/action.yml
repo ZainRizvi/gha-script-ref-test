@@ -1,0 +1,7 @@
+name: 'Branch Action - Regular - CI Scripts'
+description: 'Runs script from ci/ via branch-ref action'
+runs:
+  using: 'composite'
+  steps:
+    - run: bash ci/action-branch-regular.sh
+      shell: bash

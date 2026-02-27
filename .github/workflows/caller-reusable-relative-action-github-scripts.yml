@@ -1,0 +1,8 @@
+name: 'Test: Reusable + Relative Action + GitHub Scripts'
+
+on:
+  pull_request:
+
+jobs:
+  call-reusable:
+    uses: ./.github/workflows/test-reusable-relative-action-github-scripts.yml

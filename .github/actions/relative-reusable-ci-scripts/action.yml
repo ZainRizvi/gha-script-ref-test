@@ -1,0 +1,7 @@
+name: 'Relative Action - Reusable - CI Scripts'
+description: 'Runs script from ci/ via relative action ref (reusable workflow)'
+runs:
+  using: 'composite'
+  steps:
+    - run: bash ci/action-relative-reusable.sh
+      shell: bash

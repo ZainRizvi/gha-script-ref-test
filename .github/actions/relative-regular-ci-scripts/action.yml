@@ -1,0 +1,7 @@
+name: 'Relative Action - Regular - CI Scripts'
+description: 'Runs script from ci/ via relative action ref'
+runs:
+  using: 'composite'
+  steps:
+    - run: bash ci/action-relative-regular.sh
+      shell: bash

@@ -1,0 +1,7 @@
+name: 'Relative Action - Regular - GitHub Scripts'
+description: 'Runs script from .github/scripts via relative action ref'
+runs:
+  using: 'composite'
+  steps:
+    - run: bash .github/scripts/action-relative-regular.sh
+      shell: bash
